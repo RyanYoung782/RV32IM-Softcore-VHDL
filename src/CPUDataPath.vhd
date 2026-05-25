@@ -110,11 +110,11 @@ architecture rtl of CPUDataPath is
 		);
 	end IntegerALU;
 	
-	component MulDivALU is 
+	component MuldivUnit is 
 		port(
 		
 		);
-	end MulDivALU;
+	end MuldivUnit;
 	
 	component ProgramCounter is
 		port(

@@ -2,59 +2,44 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity program_counter is
-	port(
-		clk : in std_logic;
-		reset : in std_logic;
-		stall : in std_logic;
-		jump_or_branch_condition : in std_logic;
-		jump_or_branch_addr : in std_logic_vector(31 downto 0);
-		pc_out : out std_logic_vector(31 downto 0);
-		pc_plus4_out : out std_logic_vector(31 downto 0)
-	);
-end program_counter;
-architecture rtl of program_counter is
-	signal counter_register : std_logic_vector(31 downto 0) := (others => '0');
-	signal counter_next : std_logic_vector(31 downto 0);
-	signal counter_plus4 : std_logic_vector(31 downto 0);
-	signal start: std_logic := '1';
+entity ProgramCounter is
+  port(
+    clk : in std_logic;
+    reset : in std_logic;
+    stall : in std_logic;
+    branch_taken : in std_logic;
+    branch_addr : in std_logic_vector(31 downto 0);
+    
+    pc : out std_logic_vector(31 downto 0);
+    pc_plus_4 : out std_logic_vector(31 downto 0)
+  );
+end entity ProgramCounter;
+
+architecture rtl of ProgramCounter is
+  signal pc_reg : std_logic_vector(31 downto 0);
+  signal next_pc : std_logic_vector(31 downto 0);
+  
 begin
-	--Combinational logic
-	--Set counter + (size of word addr)
-	counter_plus4 <= std_logic_vector(unsigned(counter_register) + 4);
-	
-	-- Combinational outputs — immediately reflect current register value
-	pc_out <= counter_register;
-	pc_plus4_out <= counter_plus4;
- 
-	--MUX the branch/jump with the (counter + 4). If branch condition high, next set to the branch/jump address, else, set to (counter + 4)
-	branch: process(jump_or_branch_condition, jump_or_branch_addr, counter_plus4)
-	begin
-		if jump_or_branch_condition = '1' then
-			counter_next <= jump_or_branch_addr;
-		else
-			counter_next <= counter_plus4;
-		end if;
-	end process;
-	
-	--Register update logic
-	update_register: process(clk, reset)
-	begin
-		if reset = '1' then
-			--reset counter
-			counter_register <= (others => '0');
-		elsif rising_edge(clk) then
-			--Stall takes precedence :-)
-			if start = '1' then
-				start <= '0';
-				counter_register <= counter_register;
-			elsif stall = '1' then
-				counter_register <= counter_register;
-			else
-				--updated counter
-				counter_register <= counter_next;
-			end if;
-		end if;
-	end process;
-	
-end rtl;
+
+  --next pc value determination. MUXes the branch_addr and pc_reg with branch_taken as the select signal.
+  next_pc <= branch_addr when branch_taken = '1' else
+             std_logic_vector(unsigned(pc_reg) + 4);
+
+  --Synchronous: On the rising edge of the clock, reset OR Update PC OR stall
+  count_proc: process(clk)
+  begin
+    if rising_edge(clk) then
+      if reset = '1' then
+        pc_reg <= (others => '0');
+      elsif stall = '0' then
+        pc_reg <= next_pc;
+      end if;
+      --If stall = '1', then pc_reg does not update and it retains it's value.
+    end if;
+  end process;
+
+  --Combinational outputs
+  pc <= pc_reg;
+  pc_plus_4 <= std_logic_vector(unsigned(pc_reg) + 4);
+
+end architecture;

@@ -26,7 +26,7 @@ end entity RegisterFile;
 
 architecture rtl of RegisterFile is
 
-	--array of 32 32 bit registers, we will skip zero
+	--array of 32 32-bit registers, we will skip zero register, as it will always stay at 0.
 	type reg_array is array(0 to 31) of std_logic_vector(31 downto 0);
 	signal all_regs : reg_array := x"00000000";
 
@@ -49,14 +49,31 @@ architecture rtl of RegisterFile is
 		end if;
 	end process write_proc;
 	
+	
 	-- asynchronous reads
 	-- address 0 always returns zero
 	-- pretty straight forward, access the array index by converting the input std_logic into unsigned then integer, set the output to the value
-		
-	rs1_data <= (others => '0') when rs1_addr = "00000"
-	else all_regs(to_integer(unsigned(rs1_addr)));
-	
-	rs2_data <= (others => '0') when rs2_addr = "00000"
-	else all_regs(to_integer(unsigned(rs2_addr)));
-	
+	--Internal Forwarding Path for same cycle read before writes!
+	--This will check if the reg_write is high (writeback at rising edge of next CC) and allow us to internally forward that result to a consuming register before it is written. Necessary for avoiding 
+	read_proc: process(rs1_addr, rs2_addr, reg_write, rd_addr, write_data)
+		if (reg_write = '1') then
+			--rs1 check
+			if rs1_addr = rd_addr then
+				--internal forwarding
+				rs1_data <= write_data;
+			else 
+				--else use register file saved value. Guard set for zero register
+				rs1_data <= (others => '0') when rs1_addr = "00000" else all_regs(to_integer(unsigned(rs1_addr)));
+			end if;
+				
+			--rs2 check
+			if rs2_addr = rd_addr then
+				--internal forwarding
+				rs2_data <= write_data;
+			else 
+				--else use register file saved value. Guard set for zero register
+				rs2_data <= (others => '0') when rs2_addr = "00000" else all_regs(to_integer(unsigned(rs2_addr)));
+			end if;
+		end if;
+	end process;
 end architecture;
