@@ -20,7 +20,7 @@ package riscv_constants is
 	
 	--M extension operations
 	type muldiv_op_t is (
-		MULDIV_MUL, MULDIV_MULH, MULDIV_MULSU, MULDIV_MULU,
+		MULDIV_MUL, MULDIV_MULH, MULDIV_MULHSU, MULDIV_MULHU,
 		MULDIV_DIV, MULDIV_DIVU,
 		MULDIV_REM, MULDIV_REMU
 	);

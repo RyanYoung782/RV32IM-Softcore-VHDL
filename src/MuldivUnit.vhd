@@ -16,7 +16,7 @@ entity MuldivUnit is
 		--Outputs
 		muldivBusy: out std_logic;
 		muldivReadValid: out std_logic;
-		output: out std_logic_vector(31 downto 0);
+		output: out std_logic_vector(31 downto 0)
 	);
 end MuldivUnit;
 
