@@ -28,7 +28,7 @@ architecture rtl of RegisterFile is
 
 	--array of 32 32-bit registers, we will skip zero register, as it will always stay at 0.
 	type reg_array is array(0 to 31) of std_logic_vector(31 downto 0);
-	signal all_regs : reg_array := x"00000000";
+	signal all_regs : reg_array := (others => (others => '0'));
 
 	begin
 	-- synchronous write
@@ -56,14 +56,19 @@ architecture rtl of RegisterFile is
 	--Internal Forwarding Path for same cycle read before writes!
 	--This will check if the reg_write is high (writeback at rising edge of next CC) and allow us to internally forward that result to a consuming register before it is written. Necessary for avoiding 
 	read_proc: process(rs1_addr, rs2_addr, reg_write, rd_addr, write_data)
-		if (reg_write = '1') then
+	begin
+		if reg_write = '1' then
 			--rs1 check
 			if rs1_addr = rd_addr then
 				--internal forwarding
 				rs1_data <= write_data;
 			else 
 				--else use register file saved value. Guard set for zero register
-				rs1_data <= (others => '0') when rs1_addr = "00000" else all_regs(to_integer(unsigned(rs1_addr)));
+				if rs1_addr = "00000" then
+					rs1_data <= (others => '0');
+				else 
+					rs1_data <= all_regs(to_integer(unsigned(rs1_addr)));
+				end if;
 			end if;
 				
 			--rs2 check
@@ -72,8 +77,26 @@ architecture rtl of RegisterFile is
 				rs2_data <= write_data;
 			else 
 				--else use register file saved value. Guard set for zero register
-				rs2_data <= (others => '0') when rs2_addr = "00000" else all_regs(to_integer(unsigned(rs2_addr)));
+				if rs2_addr = "00000" then
+					rs2_data <= (others => '0');
+				else 
+					rs2_data <= all_regs(to_integer(unsigned(rs2_addr)));
+				end if;
+			end if;
+		else
+			--Default Read Value for 1st port
+			if rs1_addr = "00000" then
+				rs1_data <= (others => '0');
+			else 
+				rs1_data <= all_regs(to_integer(unsigned(rs1_addr)));
+			end if;
+			--Default Read Value for 2nd port
+			if rs2_addr = "00000" then
+				rs2_data <= (others => '0');
+			else 
+				rs2_data <= all_regs(to_integer(unsigned(rs2_addr)));
 			end if;
 		end if;
 	end process;
+	
 end architecture;

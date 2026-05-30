@@ -37,7 +37,7 @@ architecture behavior of RegisterFile_tb is
 	signal rs2_data : std_logic_vector(31 downto 0);
  
 	--Clock generation constant
-	constant CLK_PERIOD : time := 10 ns;
+	constant CLK_PERIOD : time := 1 ns;
  
 	--Helper procedure to perform a write
 	procedure write_register(
@@ -70,10 +70,7 @@ architecture behavior of RegisterFile_tb is
 		rs_addr <= addr;
 		wait for 2 ns; --Allow async read propagation
 		if rs_data /= expected then
-			report "FAIL: " & test_name & 
-				" | Address: " & to_hstring(addr) &
-				" | Got: " & to_hstring(rs_data) & 
-				" | Expected: " & to_hstring(expected)
+			report "FAIL: " & test_name
 				severity error;
 			error_count := error_count + 1;
 		else
@@ -469,8 +466,7 @@ begin
 		else
 			report "SOME TESTS FAILED - Review errors above" severity error;
 		end if;
- 
- 
+		
 		wait;
  
 	end process test_proc;
