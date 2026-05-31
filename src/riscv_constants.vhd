@@ -1,3 +1,6 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
 package riscv_constants is
 
     -- Opcodes
@@ -31,7 +34,7 @@ package riscv_constants is
 	);
 	
 	--Load Store size formats
-	type data_access_size_t (
+	type data_access_size_t is (
 		DATA_BYTE, DATA_HALF, DATA_WORD, DATA_UNSIGNED_BYTE, DATA_UNSIGNED_HALF
 	);
 

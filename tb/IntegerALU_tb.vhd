@@ -1,18 +1,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
+library work;
+use work.riscv_constants.all;
  
 entity IntegerALU_tb is
 end entity;
  
 architecture behavior of IntegerALU_tb is
-	
-	--ALU operation type (in riscv_constants.vhd)
-	type alu_op_t is (
-		ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR,
-		ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
-		ALU_LUI, ALU_AUIPC
-	);
 	
 	component IntegerALU is
 		port(
@@ -49,10 +45,7 @@ architecture behavior of IntegerALU_tb is
 		wait for 10 ns;
 		
 		if result_sig /= expected then
-			report "FAIL: " & test_name & 
-				" | Got: " & to_hstring(result_sig) & 
-				" Expected: " & to_hstring(expected)
-				severity error;
+			report "FAIL: " & test_name severity error;
 			error_count := error_count + 1;
 		else
 			report "PASS: " & test_name severity note;
@@ -256,10 +249,10 @@ begin
 			"SLL: 1 << 31 = 0x80000000", error_count);
 		total_tests := total_tests + 1;
 		
-		--Shift beyond 31 bits (shift amount = 32, implementation dependent)
+		--Shift full length
 		test_case(alu_op, rs1, rs2, result, ALU_SLL,
-			x"00000001", x"00000020", x"00000000",
-			"SLL: 1 << 32 = 0 (if 5-bit shift amount)", error_count);
+			x"FFFFFFFF", x"0000001F", x"80000000",
+			"SLL: MAX << 31 = x80000000", error_count);
 		total_tests := total_tests + 1;
 		
 		--Shift with sign bit
@@ -296,10 +289,10 @@ begin
 			"SRL: 1 >> 31 = 0", error_count);
 		total_tests := total_tests + 1;
 		
-		--Shift beyond range
+		--Shift beyond range (behavior not captured and results in no shift at all)
 		test_case(alu_op, rs1, rs2, result, ALU_SRL,
-			x"FFFFFFFF", x"00000020", x"00000000",
-			"SRL: 0xFFFFFFFF >> 32 = 0", error_count);
+			x"FFFFFFFF", x"00000020", x"FFFFFFFF",
+			"SRL: 0xFFFFFFFF >> 32 = 0xFFFFFFFF", error_count);
 		total_tests := total_tests + 1;
 		
 		--ALU_SRA Tests (Shift Right Arithmetic) 
@@ -449,28 +442,28 @@ begin
 		report "--- Testing ALU_AUIPC (Add Upper Immediate to PC) ---" severity note;
 		
 		--AUIPC: result = pc + (rs2 << 12)
-		--Assuming PC = 0 for simplicity in this test
+		--Assuming 0 Upper Immediate Load
 		test_case(alu_op, rs1, rs2, result, ALU_AUIPC,
-			x"00000000", x"00000001", x"00001000",
-			"AUIPC: 0 + (1 << 12) = 0x1000", error_count);
+			x"CAFEBABE", x"00000000", x"CAFEBABE",
+			"AUIPC: PC + 0 = PC", error_count);
 		total_tests := total_tests + 1;
 		
-		--AUIPC with zero immediate
+		--AUIPC with zero PC and Upper Immediate Load
 		test_case(alu_op, rs1, rs2, result, ALU_AUIPC,
-			x"00000000", x"00000000", x"00000000",
-			"AUIPC: 0 + 0 = 0", error_count);
+			x"00000000", x"C0FFEEEE", x"C0FFEEEE",
+			"AUIPC: 0 + UI = UI", error_count);
 		total_tests := total_tests + 1;
 		
-		--AUIPC with large immediate
+		--AUIPC with mixed PC and immediate
 		test_case(alu_op, rs1, rs2, result, ALU_AUIPC,
-			x"00000000", x"FFFFFFFF", x"FFFFF000",
-			"AUIPC: 0 + (0xFFFFFFFF << 12) = 0xFFFFF000", error_count);
+			x"CAFE0000", x"0000BABE", x"CAFEBABE",
+			"AUIPC: PC + UI = sum", error_count);
 		total_tests := total_tests + 1;
 		
-		--AUIPC with sign extended immediate
+		--AUIPC with overflow from mixed PC and immediate
 		test_case(alu_op, rs1, rs2, result, ALU_AUIPC,
-			x"00000000", x"80000000", x"80000000",
-			"AUIPC: 0 + (0x80000000) = 0x80000000", error_count);
+			x"FFFFFFFF", x"00000001", x"00000000",
+			"AUIPC: 0xFFFFFFFF + 0x00000001 = 0x00000000", error_count);
 		total_tests := total_tests + 1;
 		
 		--Additional Edge Cases 

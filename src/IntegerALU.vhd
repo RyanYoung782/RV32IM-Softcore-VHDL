@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.riscv_constants.all;
+
 entity IntegerALU is 
 	port (
 		alu_op : in alu_op_t;
@@ -39,10 +42,10 @@ architecture rtl of IntegerALU is
 	
 begin
 	--Assign unsigned, signed, and shift signals
-	signal rs1_signed <= signed(rs1);
-	signal rs2_signed <= signed(rs2);
-	signal rs1_unsigned <= unsigned(rs1);
-	signal rs2_unsigned <= unsigned(rs2);
+	a_signed <= signed(rs1);
+	b_signed <= signed(rs2);
+	a_unsigned <= unsigned(rs1);
+	b_unsigned <= unsigned(rs2);
 	shift_amount <= to_integer(unsigned(rs2(4 downto 0)));
 	
 	--Assign all operations in parallel
@@ -51,16 +54,16 @@ begin
 	xor_result <= rs1 xor rs2;
 	or_result <= rs1 or rs2;
 	and_result <= rs1 and rs2;
-	sll_result <= std_logic_vector(shift_left(rs1_unsigned), shift_amount);
-	srl_result <= std_logic_vector(shift_right(rs1_unsigned), shift_amount);
-	sra_result <= std_logic_vector(shift_right(rs1_signed), shift_amount);
-	slt_result <= x"00000001" when rs1_signed < rs2_signed else x"00000000";
-	sltu_result <= x"00000001" when rs1_unsigned < rs2_unsigned else x"00000000";
+	sll_result <= std_logic_vector(shift_left((a_unsigned), shift_amount));
+	srl_result <= std_logic_vector(shift_right((a_unsigned), shift_amount));
+	sra_result <= std_logic_vector(shift_right((a_signed), shift_amount));
+	slt_result <= x"00000001" when a_signed < b_signed else x"00000000";
+	sltu_result <= x"00000001" when a_unsigned < b_unsigned else x"00000000";
 
 
 
     process(alu_op, add_result, sub_result, xor_result, or_result, and_result,
-			sll_result, srl_result, sra_result, slt_result, sltu_result)
+			sll_result, srl_result, sra_result, slt_result, sltu_result, shift_amount)
 	begin
 		case alu_op is
 			when ALU_ADD => 
