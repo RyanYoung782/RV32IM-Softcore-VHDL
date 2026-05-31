@@ -1,3 +1,5 @@
 work/
 *.log
 build/
+vsim.wlf
+*.wlf
