@@ -31,7 +31,7 @@ entity InstructionDecoder is
 		branchEnabled: out std_logic;
 		
 		--Data Access Signals
-		dataOperation: out std_logic_vector(2 downto 0);
+		dataOperation: out data_access_size_t;
 		dataAccessEnabled: out std_logic;
 		dataReadNotWrite: out std_logic;
 		
@@ -44,28 +44,27 @@ entity InstructionDecoder is
 end InstructionDecoder;
 
 architecture rtl of InstructionDecoder is
-	--Extractable common fields:
-	signal funct7: std_logic_vector(6 downto 0);
-	signal rs2: std_logic_vector(4 downto 0);
-	signal rs1: std_logic_vector(4 downto 0);
-	signal funct3: std_logic_vector(2 downto 0);
-	signal rd: std_logic_vector(4 downto 0);
-	signal opcode: std_logic_vector(6 downto 0);
 	
-	--ENUM to tell decoder which operation format to extract the immediate field as
-	signal imm_sel: imm_sel_t;
 begin
-	--Extract all common fields
-	funct7 <= inputInstruction(31 downto 25);
-	rs2 <= inputInstruction(24 downto 20);
-	rs1 <= inputInstruction(19 downto 15);
-	funct3 <= inputInstruction(14 downto 12);
-	rd <= inputInstruction(11 downto 7);
-	opcode <= inputInstruction(6 downto 0);
 	
 	--process block for decoding instructions
-	process(opcode, funct3, funct7)
+	process(inputInstruction)
+		--Extractable common fields:
+		variable funct7: std_logic_vector(6 downto 0);
+		variable rs2: std_logic_vector(4 downto 0);
+		variable rs1: std_logic_vector(4 downto 0);
+		variable funct3: std_logic_vector(2 downto 0);
+		variable rd: std_logic_vector(4 downto 0);
+		variable opcode: std_logic_vector(6 downto 0);
 	begin
+		--Extract all common fields
+		funct7 := inputInstruction(31 downto 25);
+		rs2 := inputInstruction(24 downto 20);
+		rs1 := inputInstruction(19 downto 15);
+		funct3 := inputInstruction(14 downto 12);
+		rd := inputInstruction(11 downto 7);
+		opcode := inputInstruction(6 downto 0);
+		
 		--default vals
 		registerAddress1 <= "00000";
 		registerAddress2 <= "00000";
@@ -79,7 +78,7 @@ begin
 		muldivEnabled <= '0';
 		branchOperation <= "000";
 		branchEnabled <= '0';
-		dataOperation <= "000";
+		dataOperation <= DATA_BYTE;
 		dataAccessEnabled <= '0';
 		dataReadNotWrite <= '0';
 		wb_mux_select <= "00";
@@ -94,7 +93,7 @@ begin
 				wbEnabled <= '1';
 				alu_op1_mux_select <= "00";-- operand A = rs1
 				alu_op2_mux_select <= "00";-- operand B = rs2
-				imm_sel <= IMM_I; -- dont care, no immediate used
+				immVal <= (others => '0');  -- dont care, no immediate used
 				-- Check if M extension instruction
 				if funct7 = "0000001" then
 					--Enable the unit to be used
@@ -145,7 +144,9 @@ begin
 				alu_op1_mux_select <= "00";  -- operand A = rs1
 				alu_op2_mux_select <= "01";  -- operand B = immediate
 				wb_mux_select <= "00"; -- writeback = ALU result
-				imm_sel <= IMM_I;
+				-- bits [31:20], sign extended
+				immVal <= (31 downto 12 => inputInstruction(31)) 
+					 & inputInstruction(31 downto 20);
 				case funct3 is
 					when "000" => 
 						alu_op <= ALU_ADD; -- ADDI
@@ -181,7 +182,9 @@ begin
 				dataAccessEnabled <= '1';
 				dataReadNotWrite<= '1'; --read
 				wb_mux_select <= "10"; --writeback = data memory output
-				imm_sel <= IMM_I;
+				-- bits [31:20], sign extended
+				immVal <= (31 downto 12 => inputInstruction(31)) 
+					 & inputInstruction(31 downto 20);
 				--funct3 defines which data operation we tell the data cache to use
 				--LB=000 LH=001 LW=010 LBU=100 LHU=101
 				case funct3 is
@@ -195,8 +198,9 @@ begin
 						dataOperation <= DATA_UNSIGNED_BYTE;
 					when "101" =>
 						dataOperation <= DATA_UNSIGNED_HALF;
-					when other =>
+					when others =>
 						dataOperation <= DATA_BYTE;
+				end case;
 
 			when OP_STORE =>  --0100011
 				registerAddress1 <= rs1;
@@ -208,7 +212,10 @@ begin
 				dataAccessEnabled <= '1';
 				dataReadNotWrite <= '0';  --write
 				wb_mux_select <= "00";  --dont care, wbEnabled = 0
-				imm_sel <= IMM_S;
+				-- bits [31:25] | [11:7], sign extended
+				immVal <= (31 downto 12 => inputInstruction(31))
+					 & inputInstruction(31 downto 25)
+					 & inputInstruction(11 downto 7);
 				--funct3 defines data operation we tell the cache to write with
 				--SB=000 SH=001 SW=010
 				case funct3 is
@@ -218,8 +225,9 @@ begin
 						dataOperation <= DATA_HALF;
 					when "010" =>
 						dataOperation <= DATA_WORD;
-					when other =>
+					when others =>
 						dataOperation <= DATA_BYTE;
+				end case;
 
 			when OP_BRANCH => --1100011
 				registerAddress1<= rs1;
@@ -231,7 +239,12 @@ begin
 				branchEnabled <= '1';
 				branchOperation <= funct3;  --BEQ=000 BNE=001 BLT=100 BGE=101 BLTU=110 BGEU=111
 				wb_mux_select <= "00";  --dont care, wbEnabled = 0
-				imm_sel <= IMM_B;
+				immVal <= (31 downto 13 => inputInstruction(31))
+					 & inputInstruction(31)
+					 & inputInstruction(7)
+					 & inputInstruction(30 downto 25)
+					 & inputInstruction(11 downto 8)
+					 & '0';
 
 			when OP_JAL =>  --1101111
 				destinationRegister <= rd;
@@ -240,7 +253,13 @@ begin
 				alu_op2_mux_select <= "01";  --operand B = immediate
 				alu_op <= ALU_ADD;
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
-				imm_sel <= IMM_J;
+				-- bits [31][19:12][20][30:21], LSB always 0
+				immVal <= (31 downto 21 => inputInstruction(31))
+					 & inputInstruction(31)
+					 & inputInstruction(19 downto 12)
+					 & inputInstruction(20)
+					 & inputInstruction(30 downto 21)
+					 & '0';
 
 			when OP_JALR => --1100111
 				registerAddress1 <= rs1;
@@ -250,7 +269,9 @@ begin
 				alu_op2_mux_select <= "01";  --operand B = immediate
 				alu_op <= ALU_ADD;
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
-				imm_sel <= IMM_I;
+				-- bits [31:20], sign extended
+				immVal <= (31 downto 12 => inputInstruction(31)) 
+					 & inputInstruction(31 downto 20);
 
 			when OP_LUI =>  --0110111
 				destinationRegister <= rd;
@@ -259,61 +280,22 @@ begin
 				alu_op1_mux_select <= "00";  --operand A => DONT CARE
 				alu_op2_mux_select <= "01";  -- operand B = immediate (upper immediate)
 				wb_mux_select <= "00"; -- writeback = ALU result
-				imm_sel <= IMM_U;
-
-			when OP_AUIPC =>--0010111
-				destinationRegister <= rd;
-				wbEnabled <= '1';
-				alu_op1_mux_select<= '1';-- operand A = PC
-				alu_op2_mux_select<= '1';-- operand B = immediate
-				alu_op<= ALU_ADD;
-				wb_mux_select <= "00"; -- writeback = ALU result
-				imm_sel <= IMM_U;
-
-			when others => null;
-		end case;
-	end process;
-	
-	immediate_proc : process(inputInstruction, imm_sel)
-	begin
-		case imm_sel is
-
-			when IMM_I =>
-				-- bits [31:20], sign extended
-				immVal <= (31 downto 12 => inputInstruction(31)) 
-					 & inputInstruction(31 downto 20);
-
-			when IMM_S =>
-				-- bits [31:25] | [11:7], sign extended
-				immVal <= (31 downto 12 => inputInstruction(31))
-					 & inputInstruction(31 downto 25)
-					 & inputInstruction(11 downto 7);
-
-			when IMM_B =>
-				-- bits [31][7][30:25][11:8], LSB always 0
-				immVal <= (31 downto 13 => inputInstruction(31))
-					 & inputInstruction(31)
-					 & inputInstruction(7)
-					 & inputInstruction(30 downto 25)
-					 & inputInstruction(11 downto 8)
-					 & '0';
-
-			when IMM_U =>
 				-- bits [31:12], lower 12 zeroed
 				immVal <= inputInstruction(31 downto 12) 
 					 & (11 downto 0 => '0');
 
-			when IMM_J =>
-				-- bits [31][19:12][20][30:21], LSB always 0
-				immVal <= (31 downto 21 => inputInstruction(31))
-					 & inputInstruction(31)
-					 & inputInstruction(19 downto 12)
-					 & inputInstruction(20)
-					 & inputInstruction(30 downto 21)
-					 & '0';
+			when OP_AUIPC =>--0010111
+				destinationRegister <= rd;
+				wbEnabled <= '1';
+				alu_op1_mux_select<= "01";-- operand A = PC
+				alu_op2_mux_select<= "01";-- operand B = immediate
+				alu_op<= ALU_ADD;
+				wb_mux_select <= "00"; -- writeback = ALU result
+				-- bits [31:12], lower 12 zeroed
+				immVal <= inputInstruction(31 downto 12) 
+					 & (11 downto 0 => '0');
 
-			when others =>
-				immVal <= (others => '0');
+			when others => null;
 		end case;
 	end process;
 

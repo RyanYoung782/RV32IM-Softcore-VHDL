@@ -18,24 +18,19 @@ package riscv_constants is
     type alu_op_t is (
         ALU_ADD, ALU_SUB, ALU_AND, ALU_OR,  ALU_XOR,
         ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
-        ALU_LUI, ALU_AUIPC
+        ALU_LUI, ALU_AUIPC, ALU_DEFAULT
     );
 	
 	--M extension operations
 	type muldiv_op_t is (
 		MULDIV_MUL, MULDIV_MULH, MULDIV_MULHSU, MULDIV_MULHU,
 		MULDIV_DIV, MULDIV_DIVU,
-		MULDIV_REM, MULDIV_REMU
-	);
-
-    -- Immediate formats
-    type imm_sel_t is (
-		IMM_I, IMM_S, IMM_B, IMM_U, IMM_J
+		MULDIV_REM, MULDIV_REMU, MULDIV_DEFAULT
 	);
 	
 	--Load Store size formats
 	type data_access_size_t is (
-		DATA_BYTE, DATA_HALF, DATA_WORD, DATA_UNSIGNED_BYTE, DATA_UNSIGNED_HALF
+		DATA_BYTE, DATA_HALF, DATA_WORD, DATA_UNSIGNED_BYTE, DATA_UNSIGNED_HALF, DATA_DEFAULT
 	);
 
 end package;
