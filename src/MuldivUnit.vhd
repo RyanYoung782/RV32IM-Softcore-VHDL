@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+library work;
+use work.riscv_constants.all;
 
 entity MuldivUnit is
 	port(
@@ -15,7 +17,7 @@ entity MuldivUnit is
 		
 		--Outputs
 		muldivBusy: out std_logic;
-		muldivReadValid: out std_logic;
+		muldivResultValid: out std_logic;
 		output: out std_logic_vector(31 downto 0)
 	);
 end MuldivUnit;
@@ -23,5 +25,8 @@ end MuldivUnit;
 architecture rtl of MuldivUnit is
 
 begin
-
+	--No behavior for the time being!
+	muldivBusy <= '0';
+	muldivResultValid <= '0';
+	output <= x"00000000";
 end architecture;

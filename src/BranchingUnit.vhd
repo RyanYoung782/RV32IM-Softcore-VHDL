@@ -23,11 +23,11 @@ use ieee.numeric_std.all;
 
 entity BranchingUnit is 
 	port(
-	rs1_data : in std_logic_vector(31 downto 0);  -- rs1 (from EX operand 1 MUX)
-	rs2_data : in std_logic_vector(31 downto 0);  -- rs2 (from EX operand 2 MUX)
-	branch_op : in std_logic_vector(2  downto 0);  -- branch type (from id/ex register)
-    branch : in std_logic;  -- '1' = current instr is branch (branch_enable)
-    branch_taken : out std_logic  -- '1' = condition met, take branch
+		rs1_data : in std_logic_vector(31 downto 0);  -- rs1 (from EX operand 1 MUX)
+		rs2_data : in std_logic_vector(31 downto 0);  -- rs2 (from EX operand 2 MUX)
+		branch_op : in std_logic_vector(2  downto 0);  -- branch type (from id/ex register)
+		branch : in std_logic;  -- '1' = current instr is branch (branch_enable)
+		branch_taken : out std_logic  -- '1' = condition met, take branch
 	);
 	
 end	BranchingUnit;

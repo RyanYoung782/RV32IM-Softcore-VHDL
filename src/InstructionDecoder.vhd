@@ -19,8 +19,8 @@ entity InstructionDecoder is
 		immVal : out std_logic_vector(31 downto 0);
 		
 		--EX Stage MUXes that help with operand selection and forwarding of values
-		alu_op1_mux_select: out std_logic_vector(1 downto 0);
-		alu_op2_mux_select: out std_logic_vector(1 downto 0);
+		alu_op1_mux_select: out std_logic;
+		alu_op2_mux_select: out std_logic;
 		
 		--Operation selection for the ALU and muldiv unit
 		alu_op: out alu_op_t;
@@ -71,8 +71,8 @@ begin
 		destinationRegister <= "00000";
 		wbEnabled <= '0';
 		immVal <= (others => '0');
-		alu_op1_mux_select <= "00";
-		alu_op2_mux_select <= "00";
+		alu_op1_mux_select <= '0';
+		alu_op2_mux_select <= '0';
 		alu_op <= ALU_ADD;
 		muldiv_op <= MULDIV_MUL;
 		muldivEnabled <= '0';
@@ -91,8 +91,8 @@ begin
 				registerAddress2 <= rs2;
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select <= "00";-- operand A = rs1
-				alu_op2_mux_select <= "00";-- operand B = rs2
+				alu_op1_mux_select <= '0';-- operand A = rs1
+				alu_op2_mux_select <= '0';-- operand B = rs2
 				immVal <= (others => '0');  -- dont care, no immediate used
 				-- Check if M extension instruction
 				if funct7 = "0000001" then
@@ -141,8 +141,8 @@ begin
 				registerAddress1 <= rs1;
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select <= "00";  -- operand A = rs1
-				alu_op2_mux_select <= "01";  -- operand B = immediate
+				alu_op1_mux_select <= '0';  -- operand A = rs1
+				alu_op2_mux_select <= '1';  -- operand B = immediate
 				wb_mux_select <= "00"; -- writeback = ALU result
 				-- bits [31:20], sign extended
 				immVal <= (31 downto 12 => inputInstruction(31)) 
@@ -176,8 +176,8 @@ begin
 				registerAddress1 <= rs1;
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select <= "00"; --operand A = rs1
-				alu_op2_mux_select <= "01"; --operand B = immediate (offset)
+				alu_op1_mux_select <= '0'; --operand A = rs1
+				alu_op2_mux_select <= '1'; --operand B = immediate (offset)
 				alu_op <= ALU_ADD;
 				dataAccessEnabled <= '1';
 				dataReadNotWrite<= '1'; --read
@@ -205,9 +205,8 @@ begin
 			when OP_STORE =>  --0100011
 				registerAddress1 <= rs1;
 				registerAddress2 <= rs2;
-				wbEnabled <= '0';  --stores do not write to register file
-				alu_op1_mux_select <= "00";  --operand A = rs1
-				alu_op2_mux_select <= "01";  --operand B = immediate (offset)
+				alu_op1_mux_select <= '0';  --operand A = rs1
+				alu_op2_mux_select <= '1';  --operand B = immediate (offset)
 				alu_op <= ALU_ADD;
 				dataAccessEnabled <= '1';
 				dataReadNotWrite <= '0';  --write
@@ -232,9 +231,8 @@ begin
 			when OP_BRANCH => --1100011
 				registerAddress1<= rs1;
 				registerAddress2<= rs2;
-				wbEnabled <= '0';  --branches do not write to register file
-				alu_op1_mux_select <= "01";  --operand A = PC (branch target = PC + imm)
-				alu_op2_mux_select <= "01";  --operand B = immediate
+				alu_op1_mux_select <= '1';  --operand A = PC (branch target = PC + imm)
+				alu_op2_mux_select <= '1';  --operand B = immediate
 				alu_op<= ALU_ADD;
 				branchEnabled <= '1';
 				branchOperation <= funct3;  --BEQ=000 BNE=001 BLT=100 BGE=101 BLTU=110 BGEU=111
@@ -249,8 +247,8 @@ begin
 			when OP_JAL =>  --1101111
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select <= "01";  --operand A = PC (target = PC + imm)
-				alu_op2_mux_select <= "01";  --operand B = immediate
+				alu_op1_mux_select <= '1';  --operand A = PC (target = PC + imm)
+				alu_op2_mux_select <= '1';  --operand B = immediate
 				alu_op <= ALU_ADD;
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
 				-- bits [31][19:12][20][30:21], LSB always 0
@@ -265,8 +263,8 @@ begin
 				registerAddress1 <= rs1;
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select <= "00";  --operand A = rs1 (target = rs1 + imm)
-				alu_op2_mux_select <= "01";  --operand B = immediate
+				alu_op1_mux_select <= '0';  --operand A = rs1 (target = rs1 + imm)
+				alu_op2_mux_select <= '1';  --operand B = immediate
 				alu_op <= ALU_ADD;
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
 				-- bits [31:20], sign extended
@@ -277,8 +275,8 @@ begin
 				destinationRegister <= rd;
 				wbEnabled <= '1';
 				alu_op <= ALU_LUI;
-				alu_op1_mux_select <= "00";  --operand A => DONT CARE
-				alu_op2_mux_select <= "01";  -- operand B = immediate (upper immediate)
+				alu_op1_mux_select <= '0';  --operand A => DONT CARE
+				alu_op2_mux_select <= '1';  -- operand B = immediate (upper immediate)
 				wb_mux_select <= "00"; -- writeback = ALU result
 				-- bits [31:12], lower 12 zeroed
 				immVal <= inputInstruction(31 downto 12) 
@@ -287,8 +285,8 @@ begin
 			when OP_AUIPC =>--0010111
 				destinationRegister <= rd;
 				wbEnabled <= '1';
-				alu_op1_mux_select<= "01";-- operand A = PC
-				alu_op2_mux_select<= "01";-- operand B = immediate
+				alu_op1_mux_select<= '1';-- operand A = PC
+				alu_op2_mux_select<= '1';-- operand B = immediate
 				alu_op<= ALU_ADD;
 				wb_mux_select <= "00"; -- writeback = ALU result
 				-- bits [31:12], lower 12 zeroed

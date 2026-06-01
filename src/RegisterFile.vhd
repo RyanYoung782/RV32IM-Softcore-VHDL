@@ -4,24 +4,24 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity RegisterFile is
-  port(
-    -- clock and reset
-    clk : in std_logic;  -- rising-edge system clock
-    reset : in std_logic;  -- synchronous active-high reset
+	port(
+		-- clock and reset
+		clk : in std_logic;  -- rising-edge system clock
+		reset : in std_logic;  -- synchronous active-high reset
 
-    -- write port
-    reg_write : in std_logic;  -- write enable (active-high)
-    rd_addr : in std_logic_vector(4 downto 0);  -- destination register address
-    write_data : in std_logic_vector(31 downto 0);  -- data written when reg_write is high
+		-- write port
+		reg_write : in std_logic;  -- write enable (active-high)
+		rd_addr : in std_logic_vector(4 downto 0);  -- destination register address
+		write_data : in std_logic_vector(31 downto 0);  -- data written when reg_write is high
 
-    -- read port 1
-    rs1_addr : in std_logic_vector(4 downto 0);  -- source register 1 address
-    rs1_data : out std_logic_vector(31 downto 0); -- source register 1 data (combinational)
+		-- read port 1
+		rs1_addr : in std_logic_vector(4 downto 0);  -- source register 1 address
+		rs1_data : out std_logic_vector(31 downto 0); -- source register 1 data (combinational)
 
-    -- read port 2
-    rs2_addr : in std_logic_vector(4 downto 0);  -- source register 2 address
-    rs2_data : out std_logic_vector(31 downto 0));  -- source register 2 data (combinational)
-
+		-- read port 2
+		rs2_addr : in std_logic_vector(4 downto 0);  -- source register 2 address
+		rs2_data : out std_logic_vector(31 downto 0)  -- source register 2 data (combinational)
+	);
 end entity RegisterFile;
 
 architecture rtl of RegisterFile is
