@@ -45,7 +45,7 @@ add wave -r /topLevelCPU/CPUDataPathInstance/branch_taken
 # ModelSim memory loader porting program.txt line by line into InstructionCacheInstance memory array
 # Here, each line of program.txt is a line of machine code as a 32bit binary number
 # If instead we wanted to load HEX files in , just change to "-format hex"
-mem load -infile $program_file -format binary /TopLevelCPU/InstructionCacheInstance/memory
+mem load -infile $program_file -format hex /TopLevelCPU/InstructionCacheInstance/memory
  
 # Clokc + Reset generation
 # Drive clock on the DUT port
