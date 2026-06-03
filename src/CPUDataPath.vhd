@@ -89,9 +89,7 @@ architecture rtl of CPUDataPath is
 	component ForwardingUnit is
 		port(
 			idex_rs1 : in std_logic_vector(4 downto 0);
-			idex_op1MUXSelect : in std_logic;
-			idex_rs2 : in std_logic_vector(4 downto 0);
-			idex_op2MUXSelect : in std_logic;		
+			idex_rs2 : in std_logic_vector(4 downto 0);		
 			exmem_rd : in std_logic_vector(4 downto 0);
 			memwb_rd : in std_logic_vector(4 downto 0);
 			
@@ -271,9 +269,7 @@ begin
 	ForwardingUnitInstance : ForwardingUnit
 		port map(
 			idex_rs1 => idex_rs1,
-			idex_op1MUXSelect => idex_operand1MUXSelect,
 			idex_rs2 => idex_rs2,
-			idex_op2MUXSelect => idex_operand2MUXSelect,
 			exmem_rd => exmem_rd,
 			memwb_rd => memwb_rd,
 			rs1MUXSelect => rs1MUXSelect,
@@ -286,7 +282,7 @@ begin
 			idRs2 => registerAddress2,
 			branch_taken => branch_taken,
 			idex_dataEnabled => idex_dataEnabled,
-			idex_dataReadNotWrite => idex_dataEnabled,
+			idex_dataReadNotWrite => idex_dataReadNotWrite,
 			idex_rd => idex_rd,
 			muldivBusy => muldivBusy,
 			muldivResultValid => muldivResultValid,

@@ -73,12 +73,12 @@ begin
 		immVal <= (others => '0');
 		alu_op1_mux_select <= '0';
 		alu_op2_mux_select <= '0';
-		alu_op <= ALU_ADD;
-		muldiv_op <= MULDIV_MUL;
+		alu_op <= ALU_DEFAULT;
+		muldiv_op <= MULDIV_DEFAULT;
 		muldivEnabled <= '0';
 		branchOperation <= "000";
 		branchEnabled <= '0';
-		dataOperation <= DATA_BYTE;
+		dataOperation <= DATA_DEFAULT;
 		dataAccessEnabled <= '0';
 		dataReadNotWrite <= '0';
 		wb_mux_select <= "00";
@@ -109,7 +109,7 @@ begin
 						when "101" => muldiv_op <= MULDIV_DIVU;
 						when "110" => muldiv_op <= MULDIV_REM;
 						when "111" => muldiv_op <= MULDIV_REMU;
-						when others => null;
+						when others => null;  --Already MULDIV_DEFAULT assignment
 					end case;
 				else
 					wb_mux_select <= "00"; -- writeback = ALU result
@@ -133,7 +133,7 @@ begin
 							end if;
 						when "110" => alu_op <= ALU_OR;
 						when "111" => alu_op <= ALU_AND;
-						when others => null;
+						when others => null;  --Already ALU_DEFAULT assignment
 					end case;
 				end if;
 
@@ -169,7 +169,7 @@ begin
 					when "111" => 
 						alu_op <= ALU_AND; --ANDI
 					when others => 
-						alu_op <= ALU_AND; --Least harmful op to default to 
+						null;  --Already ALU_DEFAULT assignment 
 				end case;
 
 			when OP_LOAD => --0000011
@@ -199,7 +199,7 @@ begin
 					when "101" =>
 						dataOperation <= DATA_UNSIGNED_HALF;
 					when others =>
-						dataOperation <= DATA_BYTE;
+						null;  --Already DATA_DEFAULT assignment
 				end case;
 
 			when OP_STORE =>  --0100011
@@ -225,7 +225,7 @@ begin
 					when "010" =>
 						dataOperation <= DATA_WORD;
 					when others =>
-						dataOperation <= DATA_BYTE;
+						null;  --Already DATA_DEFAULT assignment
 				end case;
 
 			when OP_BRANCH => --1100011
@@ -250,6 +250,8 @@ begin
 				alu_op1_mux_select <= '1';  --operand A = PC (target = PC + imm)
 				alu_op2_mux_select <= '1';  --operand B = immediate
 				alu_op <= ALU_ADD;
+				branchEnabled <= '1';
+				branchOperation <= "010";
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
 				-- bits [31][19:12][20][30:21], LSB always 0
 				immVal <= (31 downto 21 => inputInstruction(31))
@@ -265,7 +267,9 @@ begin
 				wbEnabled <= '1';
 				alu_op1_mux_select <= '0';  --operand A = rs1 (target = rs1 + imm)
 				alu_op2_mux_select <= '1';  --operand B = immediate
-				alu_op <= ALU_ADD;
+				alu_op <= ALU_JALR;
+				branchEnabled <= '1';
+				branchOperation <= "010";
 				wb_mux_select <= "11";  --writeback = PC + 4 (link address)
 				-- bits [31:20], sign extended
 				immVal <= (31 downto 12 => inputInstruction(31)) 
@@ -287,13 +291,15 @@ begin
 				wbEnabled <= '1';
 				alu_op1_mux_select<= '1';-- operand A = PC
 				alu_op2_mux_select<= '1';-- operand B = immediate
-				alu_op<= ALU_ADD;
+				alu_op<= ALU_AUIPC;
 				wb_mux_select <= "00"; -- writeback = ALU result
 				-- bits [31:12], lower 12 zeroed
 				immVal <= inputInstruction(31 downto 12) 
 					 & (11 downto 0 => '0');
 
-			when others => null;
+			when others => 
+				null;
+				
 		end case;
 	end process;
 

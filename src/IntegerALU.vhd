@@ -90,7 +90,9 @@ begin
 				alu_result <= rs2;	--LUI result is same as just feeding immediate through. No computation necessary.
 			when ALU_AUIPC => 
 				alu_result <= add_result;  --AUIPC result the same as addition. No need to waste LUTs.
-            when others => 
+			when ALU_JALR =>
+				alu_result <= add_result and x"FFFFFFFE";
+            when others =>  --ALU_DEFAULT gets sent here!
 				alu_result <= (others => '0');
         end case;		
 	end process;

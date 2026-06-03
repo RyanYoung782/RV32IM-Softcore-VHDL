@@ -4,25 +4,15 @@
 # Compile all sources
 vlib work
 vmap work work
-vcom -2008 src/riscv_constants.vhd
-vcom -2008 src/InstructionCache.vhd
-vcom -2008 src/DataCache.vhd
-vcom -2008 src/RegisterFile.vhd
-vcom -2008 src/ProgramCounter.vhd
-vcom -2008 src/InstructionDecoder.vhd
-vcom -2008 src/IntegerALU.vhd
-vcom -2008 src/MuldivUnit.vhd
-vcom -2008 src/BranchingUnit.vhd
-vcom -2008 src/ForwardingUnit.vhd
-vcom -2008 src/HazardDetectionUnit.vhd
-vcom -2008 src/CPUDataPath.vhd
-vcom -2008 src/TopLevelCPU.vhd
+
+vcom -2008 InstructionCache.vhd
+vcom -2008 DataCache.vhd
+vcom -2008 TopLevelCPU.vhd
 
 # Start simulation
 vsim -t 1ns work.TopLevelCPU
 
 # Load instruction memory from program.txt
-# File should be one hex word per line, e.g. "00000013"
 mem load -infile docs/program.txt -format binary \
     /TopLevelCPU/InstructionCacheInstance/memory
 

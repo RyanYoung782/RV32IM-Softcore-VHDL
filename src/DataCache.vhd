@@ -121,7 +121,7 @@ begin
 								
 						end case;
 						
-					when others =>
+					when others =>  --DATA_DEFAULT
 						null;
 						
 				end case;
@@ -163,7 +163,7 @@ begin
 					when DATA_WORD =>
 						writtenWord <= writeData;
 						
-					when others =>
+					when others =>  --DATA_DEFAULT
 						writtenWord <= word;
 					
 				end case;

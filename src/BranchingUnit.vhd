@@ -18,6 +18,7 @@ use ieee.numeric_std.all;
 --        "101" (bge):  branch_taken <= '1' when signed(rs1_data) >= signed(rs2_data)
 --		  "110" (bltu): branch_taken <= '1' when unsigned(rs1_data) < unsigned(rs2_data)
 --		  "111" (bgtu): branch_taken <= '1' when unsigned(rs1_data) >= unsigned(rs2_data)
+--		  "010"  (JAL and JALR): branch_taken <= '1' (definite branch)
 --        others:       branch_taken <= '0'
 
 
@@ -73,6 +74,9 @@ begin
 					if (unsigned(rs1_data) >= unsigned(rs2_data)) then
 						branch_taken <= '1';
 					end if;
+				
+				when "010" =>  --jal and jalr unconditional branching
+					branch_taken <= '1';
 						
 				when others =>
 					branch_taken <= '0';

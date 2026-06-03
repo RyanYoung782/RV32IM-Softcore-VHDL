@@ -8,9 +8,7 @@ entity ForwardingUnit is
 		
 		--IDEX Pipeline register input signals
 		idex_rs1 : in std_logic_vector(4 downto 0);
-		idex_op1MUXSelect : in std_logic;
 		idex_rs2 : in std_logic_vector(4 downto 0);
-		idex_op2MUXSelect : in std_logic;
 		
 		
 		--EXMEM Pipeline register input signals
@@ -30,7 +28,7 @@ end ForwardingUnit;
 architecture rtl of ForwardingUnit is 
 
 begin
-	generateMUXSelects_proc : process(idex_rs1, idex_op1MUXSelect, idex_rs2, idex_op2MUXSelect, exmem_rd, memwb_rd)
+	generateMUXSelects_proc : process(idex_rs1, idex_rs2, exmem_rd, memwb_rd)
 	
 	begin
 		--defaults

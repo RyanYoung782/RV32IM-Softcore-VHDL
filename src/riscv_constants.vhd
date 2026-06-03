@@ -18,7 +18,7 @@ package riscv_constants is
     type alu_op_t is (
         ALU_ADD, ALU_SUB, ALU_AND, ALU_OR,  ALU_XOR,
         ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
-        ALU_LUI, ALU_AUIPC, ALU_DEFAULT
+        ALU_LUI, ALU_AUIPC, ALU_JALR, ALU_DEFAULT
     );
 	
 	--M extension operations
