@@ -18,4 +18,4 @@ begin
 		
 		wait;
 	end process;
-end architecture
+end architecture;

@@ -11,16 +11,21 @@ entity CPUDataPath is
 		reset : in std_logic;
 		
 		--Instruction Cache Interface
-		ICacheCurrAddress: out std_logic_vector(31 downto 0);
+		ICacheCurrAddress : out std_logic_vector(31 downto 0);
 		ICacheCurrInstruction : in std_logic_vector(31 downto 0);
 		
-		--Data Cache Interface
-		DCacheUseEnabled: out std_logic;
-		DCacheDataReadNotWrite: out std_logic;
-		DCacheDataOperation: out data_access_size_t;
-		DCacheDataAddress: out std_logic_vector(31 downto 0);
-		DCacheWriteData: out std_logic_vector(31 downto 0);
-		DCacheReadData: in std_logic_vector(31 downto 0)
+		--Data access signals 
+		DCacheUseEnabled : out std_logic;
+		
+		--MMIO access signals
+		MMIOUseEnabled : out std_logic;
+		
+		--Shared MEM stage signals
+		DataOperation : out data_access_size_t;
+		ReadNotWrite : out std_logic;
+		DataAddress : out std_logic_vector(31 downto 0);
+		WriteData : out std_logic_vector(31 downto 0);
+		ReadData : in std_logic_vector(31 downto 0)
 	);
 end CPUDataPath;
 
@@ -193,6 +198,15 @@ architecture rtl of CPUDataPath is
 		);
 	end component RegisterFile;
 	
+	component AddressDecoder is
+		port(
+			dataAddress : in std_logic_vector(31 downto 0);
+			dataEnabled : in std_logic;
+			dmem_sel : out std_logic;
+			mmio_sel : out std_logic;
+		);
+	end component AddressDecoder;
+	
 	--Component Output Wires!
 	signal branch_taken : std_logic;
 	
@@ -357,6 +371,14 @@ begin
 			rs2_addr => registerAddress2,
 			rs1_data => rs1_data,
 			rs2_data => rs2_data
+		);
+		
+	AddressDecoderInstance : AddressDecoder
+		port map(
+			dataAddress => exmem_ALUOutput,
+			dataEnabled => exmem_dataEnabled,
+			dmem_sel => DCacheUseEnabled,
+			mmio_sel => MMIOUseEnabled
 		);
 		
 	--MUX Instantiations.
@@ -542,19 +564,13 @@ begin
 		end if;
 	end process;
 	
-	--Instruction Cache connectivity
-	instructionCache_proc : process(pc)
-	begin
-		ICacheCurrAddress <= pc;
-	end process;
+	--Instruction Cache external connectivity
+	ICacheCurrAddress <= pc;
+	
+	--MEM stage shared external connectivity
+	DataOperation <= exmem_dataOperation;
+	ReadNotWrite <= exmem_dataReadNotWrite;
+	DataAddress <= exmem_ALUOutput;
+	WriteData <= exmem_rs2_data;
 
-	--Data Cache connectivity
-	dataCache_proc : process(exmem_ALUOutput, exmem_dataOperation, exmem_dataReadNotWrite, exmem_rs2_data, exmem_dataEnabled)
-	begin
-		DCacheDataAddress <= exmem_ALUOutput;
-		DCacheDataOperation <= exmem_dataOperation;
-		DCacheDataReadNotWrite <= exmem_dataReadNotWrite;
-		DCacheWriteData <= exmem_rs2_data;
-		DCacheUseEnabled <= exmem_dataEnabled;
-	end process;
 end architecture;

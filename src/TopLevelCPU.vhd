@@ -36,26 +36,59 @@ architecture layout of TopLevelCPU is
 		port(
 			clk : in std_logic;
 			reset : in std_logic;
-			ICacheCurrAddress: out std_logic_vector(31 downto 0);
-			ICacheCurrInstruction : in std_logic_vector(31 downto 0);
-			DCacheUseEnabled: out std_logic;
-			DCacheDataReadNotWrite: out std_logic;
-			DCacheDataOperation: out data_access_size_t;
-			DCacheDataAddress: out std_logic_vector(31 downto 0);
-			DCacheWriteData: out std_logic_vector(31 downto 0);
-			DCacheReadData: in std_logic_vector(31 downto 0)
+			ICacheCurrAddress : out std_logic_vector(31 downto 0);
+			ICacheCurrInstruction : in std_logic_vector(31 downto 0); 
+			DCacheUseEnabled : out std_logic;
+			MMIOUseEnabled : out std_logic;
+			DataOperation : out data_access_size_t;
+			ReadNotWrite : out std_logic;
+			DataAddress : out std_logic_vector(31 downto 0);
+			WriteData : out std_logic_vector(31 downto 0);
+			ReadData : in std_logic_vector(31 downto 0)
 		);
 	end component CPUDataPath;
 	
+	component MMIOController is
+		port (
+			clk : in std_logic;
+			rst : in std_logic;
+			addr : in std_logic_vector(31 downto 0);
+			wr_en : in std_logic;
+			wr_data : in std_logic_vector(31 downto 0);
+			rd_data : out std_logic_vector(31 downto 0);
+			sw_in : in std_logic_vector(15 downto 0);
+			btn_in : in std_logic_vector(4  downto 0);
+			led_out : out std_logic_vector(15 downto 0);
+			seg_out : out std_logic_vector(63 downto 0)
+		);
+	end component MMIOController;
+	
+	component SevenSegController is
+		generic (
+			CLK_HZ  : integer := 100000;
+			SCAN_HZ : integer := 1000
+		);
+		port(
+			clk : in std_logic;
+			rst : in std_logic;
+			binaryInput : in std_logic_vector(63 downto 0);
+			segmentOut: out std_logic_vector(7 downto 0);
+			anode : out std_logic_vector(7 downto 0)
+		);
+	end component SevenSegController;
+		
 	--Connective wires
 	signal currAddress : std_logic_vector(31 downto 0);
 	signal currInstruction : std_logic_vector(31 downto 0);
-	signal useEnabled : std_logic;
-	signal dataReadNotWrite : std_logic;
+	signal DCacheUseEnabled : std_logic;
+	signal MMIOUseEnabled : std_logic;
+	signal readNotWrite : std_logic;
 	signal dataOperation : data_access_size_t;
 	signal dataAddress : std_logic_vector(31 downto 0);
 	signal writeData : std_logic_vector(31 downto 0);
 	signal readdata : std_logic_vector(31 downto 0);
+	signal DCachereaddata : std_logic_vector(31 downto 0);
+	signal MMIOreaddata : std_logic_vector(31 downto 0);
 	
 begin
 	--Instantiating components
@@ -68,26 +101,44 @@ begin
 	DataCacheInstance : DataCache
 		port map(
 			clk => clk,
-			useEnabled => useEnabled,
+			useEnabled => DCacheUseEnabled,
 			dataReadNotWrite => dataReadNotWrite,
 			dataOperation => dataOperation,
 			dataAddress => dataAddress,
 			writeData => writeData,
-			readdata => readdata
+			readdata => DCachereaddata
 		);
 		
 	CPUDataPathInstance : CPUDataPath
 		port map(
 			clk => clk,
-			reset => reset,
+			reset => rest,
 			ICacheCurrAddress => currAddress,
 			ICacheCurrInstruction => currInstruction,
-			DCacheUseEnabled => useEnabled,
-			DCacheDataReadNotWrite => dataReadNotWrite,
-			DCacheDataOperation => dataOperation,
-			DCacheDataAddress => dataAddress,
-			DCacheWriteData => writeData,
-			DCacheReadData => readdata
+			DCacheUseEnabled => DCacheUseEnabled,
+			MMIOUseEnabled => MMIOUseEnabled,
+			DataOperation => dataOperation,
+			ReadNotWrite => readNotWrite,
+			DataAddress => dataAddress,
+			WriteData => writeData,
+			ReadData => readdata
 		);
+		
+	--FILL IN THESE
+	MMIOControllerInstance : MMIOController
+		port map(
+		
+		);
+	
+	SevenSegControllerInstance : SevenSegController
+		generic map(
+		
+		);
+		port map(
+		
+		);
+		
+	--NEED TO MUX MMIOController and DCache readdata outputs to select which one was used in prev transaction...
+	--Select signal will be dmem_enabled & mmio_enabled signals stitched tgt
 
 end architecture;
