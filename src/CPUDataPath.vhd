@@ -232,7 +232,7 @@ architecture rtl of CPUDataPath is
 	signal muldiv_op: muldiv_op_t;
 	signal branchOperation: std_logic_vector(2 downto 0);
 	signal branchEnabled: std_logic;
-	signal dataOperation: data_access_size_t;
+	signal dataOp: data_access_size_t;
 	signal dataAccessEnabled: std_logic;
 	signal dataReadNotWrite: std_logic;
 	signal wb_mux_select: std_logic_vector(1 downto 0);	
@@ -321,7 +321,7 @@ begin
 			muldiv_op => muldiv_op,
 			branchOperation => branchOperation,
 			branchEnabled => branchEnabled,
-			dataOperation => dataOperation,
+			dataOperation => dataOp,
 			dataAccessEnabled => dataAccessEnabled,
 			dataReadNotWrite => dataReadNotWrite,
 			wb_mux_select => wb_mux_select,
@@ -499,7 +499,7 @@ begin
 				idex_immVal <= immVal;
 				idex_dataEnabled <= dataAccessEnabled;
 				idex_dataReadNotWrite <= dataReadNotWrite;
-				idex_dataOperation <= dataOperation;
+				idex_dataOperation <= dataOp;
 				idex_wbMUXSelect <= wb_mux_select;
 				
 			end if;

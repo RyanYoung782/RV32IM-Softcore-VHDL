@@ -208,9 +208,9 @@ begin
 	--MEM stage readdata MUX
 	--Selects between MMIO and DCache readdata to return correct data on the specific operation
 	--Completely combinational so the readdata returns instantly where necessary.
-	with MMIOUseEnabled & DCacheUseEnabled select readdata <=
-		MMIOreaddata when "10",
-		DCachereaddata when "01",
+	with MMIOUseEnabled select readdata <=
+		MMIOreaddata when '1',
+		DCachereaddata when '0',
 		(others => '0') when others;
 
 end architecture;
