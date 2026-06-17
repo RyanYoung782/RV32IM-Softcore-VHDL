@@ -24,8 +24,8 @@ entity CPUDataPath is
 		DataOperation : out data_access_size_t;
 		ReadNotWrite : out std_logic;
 		DataAddress : out std_logic_vector(31 downto 0);
-		WriteData : out std_logic_vector(31 downto 0);
-		ReadData : in std_logic_vector(31 downto 0)
+		writedata : out std_logic_vector(31 downto 0);
+		readdata : in std_logic_vector(31 downto 0)
 	);
 end CPUDataPath;
 
@@ -203,7 +203,7 @@ architecture rtl of CPUDataPath is
 			dataAddress : in std_logic_vector(31 downto 0);
 			dataEnabled : in std_logic;
 			dmem_sel : out std_logic;
-			mmio_sel : out std_logic;
+			mmio_sel : out std_logic
 		);
 	end component AddressDecoder;
 	
@@ -553,7 +553,7 @@ begin
 				
 			else --Update Pipeline regs
 				memwb_nextAddress <= exmem_nextAddress;
-				memwb_readData <= DCacheReadData;
+				memwb_readData <= readdata;
 				memwb_ALUOutput <= exmem_ALUOutput;
 				memwb_muldivOutput <= exmem_muldivOutput;
 				memwb_rd <= exmem_rd;
@@ -571,6 +571,6 @@ begin
 	DataOperation <= exmem_dataOperation;
 	ReadNotWrite <= exmem_dataReadNotWrite;
 	DataAddress <= exmem_ALUOutput;
-	WriteData <= exmem_rs2_data;
+	writedata <= exmem_rs2_data;
 
 end architecture;
