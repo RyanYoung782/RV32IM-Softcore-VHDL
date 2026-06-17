@@ -50,9 +50,14 @@ begin
                 seg_reg <= (others => '0');
             elsif wr_en = '1' then
                 case addr(7 downto 0) is
-                    when ADDR_LED => led_reg <= wr_data(15 downto 0);
-                    when ADDR_SEG => seg_reg <= wr_data;
-                    when others   => null;
+                    when ADDR_LED => 
+						led_reg <= wr_data(15 downto 0);
+						
+                    when ADDR_SEG => 
+						seg_reg <= wr_data;
+						
+                    when others   => 
+						null;
                 end case;
             end if;
         end if;
@@ -62,11 +67,21 @@ begin
     read_proc : process(addr, sw_in, btn_in, led_reg, seg_reg)
     begin
         case addr(7 downto 0) is
-            when ADDR_SW  => rd_data <= x"0000"   & sw_in;
-            when ADDR_BTN => rd_data <= x"000000" & "000" & btn_in;
-            when ADDR_LED => rd_data <= x"0000"   & led_reg;
-            when ADDR_SEG => rd_data <= seg_reg;
-            when others   => rd_data <= (others => '0');
+            when ADDR_SW  => 
+				rd_data <= x"0000"   & sw_in;
+				
+            when ADDR_BTN => 
+				rd_data <= x"000000" & "000" & btn_in;
+			
+            when ADDR_LED => 
+				rd_data <= x"0000"   & led_reg;
+			
+            when ADDR_SEG => 
+				rd_data <= seg_reg;
+			
+            when others   => 
+				rd_data <= (others => '0');
+			
         end case;
     end process;
 
