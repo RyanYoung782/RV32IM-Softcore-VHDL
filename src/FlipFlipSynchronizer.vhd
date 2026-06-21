@@ -16,7 +16,7 @@ entity FlipFlipSynchronizer is
         async : in  std_logic_vector;
         sync  : out std_logic_vector
     );
-end FlipFlopSynchronizer;
+end FlipFlipSynchronizer;
 
 architecture arch of FlipFlipSynchronizer is
 	

@@ -47,27 +47,32 @@ begin
         if rising_edge(clk) then
             if rst = '1' then
                 led_reg <= (others => '0');
-                seg_reg <= (others => '0');
+                seg_hi_reg <= (others => '0');
+                seg_lo_reg <= (others => '0');
             elsif wr_en = '1' then
                 case addr(7 downto 0) is
                     when ADDR_LED => 
 						led_reg <= wr_data(15 downto 0);
 						
-                    when ADDR_SEG => 
-						seg_reg <= wr_data;
+                    when ADDR_SEG_LO => 
+						seg_lo_reg <= wr_data;
 						
-                    when others   => 
+					when ADDR_SEG_HI =>
+						seg_hi_reg <= wr_data;
+						
+                    when others => 
 						null;
+						
                 end case;
             end if;
         end if;
     end process;
 
 	--Combinational register read
-    read_proc : process(addr, sw_in, btn_in, led_reg, seg_reg)
+    read_proc : process(addr, sw_in, btn_in, led_reg)
     begin
         case addr(7 downto 0) is
-            when ADDR_SW  => 
+            when ADDR_SW => 
 				rd_data <= x"0000"   & sw_in;
 				
             when ADDR_BTN => 
@@ -76,10 +81,7 @@ begin
             when ADDR_LED => 
 				rd_data <= x"0000"   & led_reg;
 			
-            when ADDR_SEG => 
-				rd_data <= seg_reg;
-			
-            when others   => 
+            when others => 
 				rd_data <= (others => '0');
 			
         end case;

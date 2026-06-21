@@ -7,7 +7,7 @@ entity AddressDecoder is
 		dataAddress : in std_logic_vector(31 downto 0);
 		dataEnabled : in std_logic;
 		dmem_sel : out std_logic;
-		mmio_sel : out std_logic;
+		mmio_sel : out std_logic
 	);
 end entity;
 

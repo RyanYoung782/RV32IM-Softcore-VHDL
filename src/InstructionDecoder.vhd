@@ -180,7 +180,7 @@ begin
 				alu_op2_mux_select <= '1'; --operand B = immediate (offset)
 				alu_op <= ALU_ADD;
 				dataAccessEnabled <= '1';
-				dataReadNotWrite<= '1'; --read
+				dataReadNotWrite <= '1'; --read
 				wb_mux_select <= "10"; --writeback = data memory output
 				-- bits [31:20], sign extended
 				immVal <= (31 downto 12 => inputInstruction(31)) 

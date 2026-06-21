@@ -15,29 +15,13 @@ set register_out_file "docs/register_file.txt"
 vlib work
 vmap work work
 
-vcom -2008 ./src/InstructionCache.vhd
-vcom -2008 ./src/DataCache.vhd
-vcom -2008 ./src/TopLevelCPU.vhd
+vcom -2008 ./src/*
 
 # Start simulation
 vsim -t 1ps ./work.TopLevelCPU
 
 view wave
-add wave -r /TopLevelCPU/CPUDataPathInstance/clk
-add wave -r /TopLevelCPU/CPUDataPathInstance/reset
-add wave -r /TopLevelCPU/CPUDataPathInstance/pc
-add wave -r /TopLevelCPU/CPUDataPathInstance/pc_plus_4
-add wave -r /toplevelcpu/CPUDataPathInstance/ICacheCurrInstruction
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/inputInstruction
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/registerAddress1
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/registerAddress2
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/destinationRegister
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/immVal
-add wave -r /topLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/alu_op
-add wave -r /topLevelCPU/CPUDataPathInstance/operand1MUXOutput
-add wave -r /topLevelCPU/CPUDataPathInstance/operand2MUXOutput
-add wave -r /topLevelCPU/CPUDataPathInstance/output
-add wave -r /topLevelCPU/CPUDataPathInstance/branch_taken
+add wave -r /TopLevelCPU/DataCacheInstance/*
 
 
 
@@ -45,7 +29,7 @@ add wave -r /topLevelCPU/CPUDataPathInstance/branch_taken
 # ModelSim memory loader porting program.txt line by line into InstructionCacheInstance memory array
 # Here, each line of program.txt is a line of machine code as a 32bit binary number
 # If instead we wanted to load HEX files in , just change to "-format hex"
-mem load -infile $program_file -format hex /TopLevelCPU/InstructionCacheInstance/memory
+mem load -infile $program_file -format binary /TopLevelCPU/InstructionCacheInstance/memory
  
 # Clokc + Reset generation
 # Drive clock on the DUT port

@@ -28,7 +28,7 @@ architecture build of SevenSegController is
 begin 
 
     -- Extract current digit's 8-bit field from packed register
-    active_byte <= digits(digit_idx * 8 + 7 downto digit_idx * 8);
+    active_byte <= binaryInput(digit_idx * 8 + 7 downto digit_idx * 8);
 
     --Preps for the write to the 7-seg register
     segmentOut <= active_byte;
@@ -56,8 +56,9 @@ begin
     -- Digit select (active low)
     anode_proc : process(digit_idx)
     begin
-        an <= (others => '1');
-        an(digit_idx) <= '0';
+		--Active Low anodes
+        anode <= (others => '1');
+        anode(digit_idx) <= '0';
     end process;
 
 end architecture;
