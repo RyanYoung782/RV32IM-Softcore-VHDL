@@ -15,13 +15,23 @@ set register_out_file "docs/register_file.txt"
 vlib work
 vmap work work
 
+vcom -2008 ./src/instruction_memory.vhd
 vcom -2008 ./src/*
 
 # Start simulation
 vsim -t 1ps ./work.TopLevelCPU
 
 view wave
-add wave -r /TopLevelCPU/DataCacheInstance/*
+add wave -r /TopLevelCPU/CPUDataPathInstance/HazardDetectionUnitInstance/ifid_flush
+add wave -r /TopLevelCPU/CPUDataPathInstance/HazardDetectionUnitInstance/idex_flush
+add wave -r /TopLevelCPU/CPUDataPathInstance/HazardDetectionUnitInstance/pc_stall
+add wave -r /TopLevelCPU/CPUDataPathInstance/HazardDetectionUnitInstance/ifid_stall
+add wave -r /TopLevelCPU/CPUDataPathInstance/HazardDetectionUnitInstance/idex_stall
+add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/inputInstruction
+add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/alu_op
+add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/dataOperation
+add wave -r /TopLevelCPU/CPUDataPathInstance/ifid_currAddress
+
 
 
 
@@ -29,16 +39,16 @@ add wave -r /TopLevelCPU/DataCacheInstance/*
 # ModelSim memory loader porting program.txt line by line into InstructionCacheInstance memory array
 # Here, each line of program.txt is a line of machine code as a 32bit binary number
 # If instead we wanted to load HEX files in , just change to "-format hex"
-mem load -infile $program_file -format binary /TopLevelCPU/InstructionCacheInstance/memory
+# mem load -infile $program_file -format binary /TopLevelCPU/InstructionCacheInstance/memory
  
 # Clokc + Reset generation
 # Drive clock on the DUT port
 force -freeze /TopLevelCPU/clk  0 0ns, 1 0.5ns -repeat 1ns
  
-# Assert reset for 3 cycles, then deassert
-force -freeze /TopLevelCPU/reset 1 0ns
-run 3ns
+# Assert active low reset for 3 cycles, then deassert
 force -freeze /TopLevelCPU/reset 0 0ns
+run 3ns
+force -freeze /TopLevelCPU/reset 1 0ns
  
 # Run simulation for desired number of CCs
 run [expr {$num_cycles * 1}]ns

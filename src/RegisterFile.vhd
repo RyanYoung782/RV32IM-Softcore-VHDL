@@ -55,7 +55,7 @@ architecture rtl of RegisterFile is
 	-- pretty straight forward, access the array index by converting the input std_logic into unsigned then integer, set the output to the value
 	--Internal Forwarding Path for same cycle read before writes!
 	--This will check if the reg_write is high (writeback at rising edge of next CC) and allow us to internally forward that result to a consuming register before it is written. Necessary for avoiding 
-	read_proc: process(rs1_addr, rs2_addr, reg_write, rd_addr, write_data)
+	read_proc: process(rs1_addr, rs2_addr, reg_write, rd_addr, write_data, all_regs)
 	begin
 		if reg_write = '1' then
 			--rs1 check

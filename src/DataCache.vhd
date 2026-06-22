@@ -41,7 +41,7 @@ begin
 		end if;
 	end process;
 			
-	combinational_proc: process(useEnabled, dataReadNotWrite, dataOperation, dataAddress, memory, addressPointer, alignment)
+	combinational_proc: process(useEnabled, dataReadNotWrite, dataOperation, dataAddress, memory, addressPointer, alignment, writeData)
 		variable word : std_logic_vector(31 downto 0);
 	begin	
 		--Get data word being utilized

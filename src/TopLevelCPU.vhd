@@ -119,7 +119,13 @@ architecture layout of TopLevelCPU is
 	--7-Segment Displays
 	signal segmentBinary : std_logic_vector(63 downto 0);
 	
+	--Need to flip the reset signal
+	signal reset_internal : std_logic;
+	
 begin
+    --Flip the reset
+    reset_internal <= not reset;
+    
 	--Instantiating components
 	InstructionCacheInstance : InstructionCache
 		port map(
@@ -141,7 +147,7 @@ begin
 	CPUDataPathInstance : CPUDataPath
 		port map(
 			clk => clk,
-			reset => reset,
+			reset => reset_internal,
 			ICacheCurrAddress => currAddress,
 			ICacheCurrInstruction => currInstruction,
 			DCacheUseEnabled => DCacheUseEnabled,
@@ -156,9 +162,9 @@ begin
 	MMIOControllerInstance : MMIOController
 		port map(
 			clk => clk,
-			rst => reset,
+			rst => reset_internal,
 			addr => currAddress, 
-			wr_en => MMIOUseEnabled,
+			wr_en => (MMIOUseEnabled and not ReadNotWrite),
 			wr_data => writeData,
 			rd_data => MMIOreaddata,
 			sw_in => sync_switch_inputs,
@@ -174,7 +180,7 @@ begin
 		)
 		port map(
 			clk => clk,
-			rst => reset,
+			rst => reset_internal,
 			binaryInput => segmentBinary,
 			segmentOut => cathode_output,
 			anode => anode_output

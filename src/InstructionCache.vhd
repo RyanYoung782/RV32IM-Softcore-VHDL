@@ -26,6 +26,8 @@ architecture rtl of InstructionCache is
 	--instantiating the memory object and indexing object
 	--signal memory : mem_t := (others => x"00000000");
 	signal memory : rom_t := PROGRAM;
+	attribute rom_style : string;
+	attribute rom_style of memory : signal is "distributed";
 	signal index : integer range 0 to TOT_SPACE - 1;
 begin
 	--Obtain index, then return the memory there.

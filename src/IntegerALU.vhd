@@ -63,7 +63,7 @@ begin
 
 
     process(alu_op, add_result, sub_result, xor_result, or_result, and_result,
-			sll_result, srl_result, sra_result, slt_result, sltu_result, shift_amount)
+			sll_result, srl_result, sra_result, slt_result, sltu_result, shift_amount, rs2)
 	begin
 		case alu_op is
 			when ALU_ADD => 
