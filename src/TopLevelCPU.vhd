@@ -163,13 +163,13 @@ begin
 		port map(
 			clk => clk,
 			rst => reset_internal,
-			addr => currAddress, 
+			addr => dataAddress, 
 			wr_en => (MMIOUseEnabled and not ReadNotWrite),
 			wr_data => writeData,
 			rd_data => MMIOreaddata,
 			sw_in => sync_switch_inputs,
 			btn_in => sync_button_inputs,
-			led_out => led_output,
+			led_out => led_out,
 			seg_out => segmentBinary
 		);
 	
@@ -218,5 +218,8 @@ begin
 		MMIOreaddata when '1',
 		DCachereaddata when '0',
 		(others => '0') when others;
+		
+	--Combinationally assign led_output register input value
+	led_output <= led_out;
 
 end architecture;

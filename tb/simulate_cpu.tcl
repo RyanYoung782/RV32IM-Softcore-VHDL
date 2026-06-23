@@ -31,7 +31,8 @@ add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/inputIns
 add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/alu_op
 add wave -r /TopLevelCPU/CPUDataPathInstance/InstructionDecoderInstance/dataOperation
 add wave -r /TopLevelCPU/CPUDataPathInstance/ifid_currAddress
-
+add wave -r /TopLevelCPU/async_switch_inputs
+add wave -r /TopLevelCPU/led_output
 
 
 
@@ -49,6 +50,8 @@ force -freeze /TopLevelCPU/clk  0 0ns, 1 0.5ns -repeat 1ns
 force -freeze /TopLevelCPU/reset 0 0ns
 run 3ns
 force -freeze /TopLevelCPU/reset 1 0ns
+run 5ns
+force -freeze /TopLevelCPU/async_switch_inputs "1111111111111111" 0ns
  
 # Run simulation for desired number of CCs
 run [expr {$num_cycles * 1}]ns

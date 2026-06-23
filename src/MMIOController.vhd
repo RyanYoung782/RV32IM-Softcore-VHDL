@@ -32,8 +32,8 @@ architecture behavior of MMIOController is
 	constant ADDR_SEG_HI : std_logic_vector(7 downto 0) := x"10";
 
     signal led_reg : std_logic_vector(15 downto 0) := (others => '0');
-    signal seg_lo_reg : std_logic_vector(31 downto 0) := (others => '0');
-	signal seg_hi_reg : std_logic_vector(31 downto 0) := (others => '0');
+    signal seg_lo_reg : std_logic_vector(31 downto 0) := (others => '1');
+	signal seg_hi_reg : std_logic_vector(31 downto 0) := (others => '1');
 
 begin
 	
@@ -47,8 +47,8 @@ begin
         if rising_edge(clk) then
             if rst = '1' then
                 led_reg <= (others => '0');
-                seg_hi_reg <= (others => '0');
-                seg_lo_reg <= (others => '0');
+                seg_hi_reg <= (others => '1');
+                seg_lo_reg <= (others => '1');
             elsif wr_en = '1' then
                 case addr(7 downto 0) is
                     when ADDR_LED => 
